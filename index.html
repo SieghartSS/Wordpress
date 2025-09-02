@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Text View — Minimal Reader</title>
+  <meta name="description" content="Tampilan website untuk membaca teks — fokus, responsif, dan dapat disesuaikan." />
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#111827; --muted:#6b7280; --maxw:780px; --accent: #3b82f6;
+    }
+    [data-theme="dark"]{ --bg:#0b1220; --fg:#e6eef8; --muted:#9aa7bb; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:var(--bg); color:var(--fg); line-height:1.7}
+    header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid rgba(0,0,0,0.04)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#6ee7b7);display:grid;place-items:center;color:white;font-weight:700}
+    .title{font-size:18px;font-weight:600}
+    .controls{display:flex;gap:8px;align-items:center}
+    button, select{background:transparent;border:1px solid rgba(0,0,0,0.08);padding:8px 10px;border-radius:8px;cursor:pointer}
+    [data-theme="dark"] button{border-color:rgba(255,255,255,0.06)}
+    main{padding:28px 20px;display:flex;justify-content:center}
+    .reader{max-width:var(--maxw);width:100%}
+    .meta{color:var(--muted);font-size:14px;margin-bottom:18px}
+    .content{font-size:20px;background:transparent;padding:12px 4px}
+    .content p{margin:0 0 18px}
+    .footer{padding:18px 20px;border-top:1px solid rgba(0,0,0,0.04);color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+    .sr-only{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
+    .controls .seg{display:inline-flex;background:rgba(0,0,0,0.03);padding:6px;border-radius:8px}
+    [data-theme="dark"] .controls .seg{background:rgba(255,255,255,0.03)}
+    .btn-ghost{border:0;padding:6px 8px}
+    @media (max-width:640px){.content{font-size:18px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">T</div>
+      <div>
+        <div class="title">Text View</div>
+        <div style="font-size:12px;color:var(--muted)">Focused reading template</div>
+      </div>
+    </div>
+    <div class="controls" role="toolbar" aria-label="Reader controls">
+      <div class="seg" role="group" aria-label="Font size">
+        <button id="dec" title="Perkecil font" aria-label="Perkecil font">A-</button>
+        <button id="reset" title="Reset font" aria-label="Reset font">A</button>
+        <button id="inc" title="Perbesar font" aria-label="Perbesar font">A+</button>
+      </div>
+      <button id="toggleTheme" title="Toggle tema gelap/terang">🌙</button>
+      <button id="print" title="Cetak halaman">🖨️</button>
+      <button id="copy" title="Salin teks">📋</button>
+      <select id="fontSelect" aria-label="Pilih jenis font">
+        <option value="Inter, system-ui, -apple-system, 'Segoe UI', Roboto">Sans (Default)</option>
+        <option value="Georgia, 'Times New Roman', serif">Serif (Baca panjang)</option>
+        <option value="'Courier New', monospace">Monospace</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <article class="reader" id="reader">
+      <div class="meta" id="meta">Pengarang — 3 September 2025 • 5 menit baca</div>
+      <section class="content" id="content" contenteditable="true" aria-label="Konten teks">
+<p>Ini adalah contoh teks. Ganti isi di sini dengan tulisan Anda. Area ini dapat diedit langsung di browser (contenteditable) untuk demo — saat mengintegrasikan ke CMS, ganti dengan konten server-side.</p>
+
+<p>Fitur bawaan:
+<ul>
+<li>Mode gelap/terang</li>
+<li>Kontrol ukuran font</li>
+<li>Ganti jenis font</li>
+<li>Salin cepat dan cetak</li>
+<li>Responsif untuk layar kecil</li>
+</ul>
+</p>
+
+<p>Tekan Ctrl + + untuk memperbesar, Ctrl + - untuk memperkecil, Ctrl + 0 untuk reset (Windows). Pada Mac gunakan Cmd.</p>
+      </section>
+    </article>
+  </main>
+
+  <footer class="footer">
+    <div>Minimal reader • dibuat untuk menampilkan teks</div>
+    <div style="display:flex;gap:12px;align-items:center"><small>Tip: klik area teks untuk mulai mengedit</small></div>
+  </footer>
+
+  <script>
+    (function(){
+      const content = document.getElementById('content');
+      const reader = document.getElementById('reader');
+      const dec = document.getElementById('dec');
+      const inc = document.getElementById('inc');
+      const reset = document.getElementById('reset');
+      const toggle = document.getElementById('toggleTheme');
+      const printBtn = document.getElementById('print');
+      const copyBtn = document.getElementById('copy');
+      const fontSelect = document.getElementById('fontSelect');
+
+      // Save preferences
+      const prefs = {
+        fontSize: 20,
+        theme: localStorage.getItem('tv-theme') || 'light',
+        fontFamily: localStorage.getItem('tv-font') || ''
+      };
+      function applyPrefs(){
+        content.style.fontSize = prefs.fontSize + 'px';
+        document.documentElement.setAttribute('data-theme', prefs.theme === 'dark' ? 'dark' : 'light');
+        if(prefs.fontFamily) content.style.fontFamily = prefs.fontFamily;
+      }
+      applyPrefs();
+
+      inc.addEventListener('click', ()=>{ prefs.fontSize = Math.min(48, prefs.fontSize + 2); applyPrefs(); localStorage.setItem('tv-fontsize', prefs.fontSize);});
+      dec.addEventListener('click', ()=>{ prefs.fontSize = Math.max(12, prefs.fontSize - 2); applyPrefs(); localStorage.setItem('tv-fontsize', prefs.fontSize);});
+      reset.addEventListener('click', ()=>{ prefs.fontSize = 20; applyPrefs(); localStorage.setItem('tv-fontsize', prefs.fontSize);});
+
+      toggle.addEventListener('click', ()=>{ prefs.theme = prefs.theme === 'dark' ? 'light' : 'dark'; applyPrefs(); localStorage.setItem('tv-theme', prefs.theme); toggle.textContent = prefs.theme === 'dark' ? '☀️' : '🌙'; });
+
+      printBtn.addEventListener('click', ()=> window.print());
+      copyBtn.addEventListener('click', async ()=>{
+        try{
+          const text = content.innerText.trim();
+          await navigator.clipboard.writeText(text);
+          copyBtn.textContent = '✅';
+          setTimeout(()=> copyBtn.textContent = '📋',900);
+        }catch(e){ alert('Tidak dapat menyalin: ' + e.message)}
+      });
+
+      fontSelect.addEventListener('change', (e)=>{ prefs.fontFamily = e.target.value; applyPrefs(); localStorage.setItem('tv-font', prefs.fontFamily); });
+
+      // Keyboard shortcuts (Ctrl/Cmd + +/-/0)
+      window.addEventListener('keydown', (ev)=>{
+        const mod = ev.ctrlKey || ev.metaKey;
+        if(!mod) return;
+        if(ev.key === '+' || ev.key === '='){ ev.preventDefault(); inc.click(); }
+        if(ev.key === '-') { ev.preventDefault(); dec.click(); }
+        if(ev.key === '0'){ ev.preventDefault(); reset.click(); }
+      });
+
+      // Load persisted font size if present
+      const savedSize = parseInt(localStorage.getItem('tv-fontsize'));
+      if(!isNaN(savedSize)) { prefs.fontSize = savedSize; applyPrefs(); }
+
+    })();
+  </script>
+</body>
+</html>
