@@ -1,0 +1,40 @@
+/*
+Theme Name: My Text Theme
+Theme URI: https://github.com/username/my-text-theme
+Author: Nama Kamu
+Author URI: https://github.com/username
+Description: Tema WordPress minimalis berbasis teks
+Version: 1.0
+License: GNU General Public License v2 or later
+Text Domain: my-text-theme
+*/
+
+body {
+    font-family: Georgia, serif;
+    font-size: 18px;
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    color: #111;
+}
+
+header, footer {
+    margin: 20px 0;
+    text-align: center;
+}
+
+nav a {
+    margin: 0 10px;
+    color: #0073aa;
+    text-decoration: none;
+}
+nav a:hover {
+    text-decoration: underline;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 1em;
+    font-weight: bold;
+}
